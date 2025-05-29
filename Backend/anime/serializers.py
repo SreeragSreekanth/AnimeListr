@@ -34,3 +34,5 @@ class AnimeSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = ['slug', 'average_rating', 'created_at']
+
+
