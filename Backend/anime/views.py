@@ -23,8 +23,9 @@ class AnimeViewSet(viewsets.ModelViewSet):
     queryset = Anime.objects.all().order_by('-created_at')
     serializer_class = AnimeSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['genres__name', 'release_year', 'average_rating']
+    filterset_fields = ['genres__name', 'release_year']
     search_fields = ['title']
+    # lookup_field = 'slug'
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:

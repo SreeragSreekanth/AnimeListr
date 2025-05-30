@@ -7,6 +7,7 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class AnimeSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
     genres = GenreSerializer(many=True, read_only=True)
     genre_ids = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -36,3 +37,5 @@ class AnimeSerializer(serializers.ModelSerializer):
         read_only_fields = ['slug', 'average_rating', 'created_at']
 
 
+    def get_average_rating(self, obj):
+        return obj.average_rating

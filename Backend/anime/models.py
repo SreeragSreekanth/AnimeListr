@@ -24,8 +24,6 @@ class Anime(models.Model):
         ('upcoming', 'Upcoming'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ongoing')
-
-    average_rating = models.FloatField(default=0)
     
     is_public_api = models.BooleanField(default=False)
     public_api_id = models.CharField(max_length=100, blank=True, null=True)
@@ -39,5 +37,14 @@ class Anime(models.Model):
 
     def __str__(self):
         return self.title
+
+
+    @property
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            return round(sum([r.rating for r in reviews]) / reviews.count(), 1)
+        return None
+
 
 
