@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/', include('anime.urls')),
     path('api/forum/', include('forum.urls')),
     path('api/', include('watchlist.urls')),
+    path('api/', include('notifications.urls')),
 
 ]
 

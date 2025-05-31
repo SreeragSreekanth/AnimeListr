@@ -25,7 +25,7 @@ class AnimeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['genres__name', 'release_year']
     search_fields = ['title']
-    # lookup_field = 'slug'
+    lookup_field = 'slug'
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:

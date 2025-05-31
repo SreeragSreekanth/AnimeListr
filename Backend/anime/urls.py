@@ -9,7 +9,7 @@ router = DefaultRouter()
 router.register(r'anime', AnimeViewSet, basename='anime')
 router.register(r'genres', GenreViewSet, basename='genre')
 
-# Nested router for reviews under anime (using slug lookup)
+# Nested router for reviews under anime 
 anime_router = routers.NestedDefaultRouter(router, r'anime', lookup='anime')
 anime_router.register(r'reviews', ReviewViewSet, basename='anime-reviews')
 

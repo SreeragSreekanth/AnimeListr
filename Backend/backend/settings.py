@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'reviews',
     'forum',
     'watchlist',
+    'notifications',
 
 ]
 

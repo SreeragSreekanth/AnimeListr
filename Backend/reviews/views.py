@@ -7,6 +7,7 @@ from rest_framework.exceptions import NotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.method in permissions.SAFE_METHODS or obj.user == request.user
@@ -20,16 +21,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'rating']
 
     def get_queryset(self):
-        anime_id= self.kwargs.get('anime_pk')  # match 'lookup' param from nested router
-        if not anime_id:
+        anime_slug= self.kwargs.get('anime_slug')  # match 'lookup' param from nested router
+        if not anime_slug:
             return Review.objects.none()  # or all reviews if you want
         try:
-            anime = Anime.objects.get(id=anime_id)
+            anime = Anime.objects.get(id=anime_slug)
         except Anime.DoesNotExist:
             raise NotFound("Anime not found")
         return Review.objects.filter(anime=anime).order_by('-created_at')
 
     def perform_create(self, serializer):
-        anime_id = self.kwargs.get('anime_pk')
-        anime = Anime.objects.get(id=anime_id)
+        anime_slug = self.kwargs.get('anime_slug')
+        anime = Anime.objects.get(id=anime_slug)
         serializer.save(user=self.request.user, anime=anime)

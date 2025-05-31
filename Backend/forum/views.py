@@ -1,6 +1,12 @@
 from rest_framework import viewsets, permissions
 from .models import Post, Comment, Report
 from .serializers import PostSerializer, CommentSerializer, ReportSerializer
+from notifications.models import Notification
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
+
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
     """
@@ -33,9 +39,18 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         post_pk = self.kwargs.get('post_pk')
-        post = Post.objects.get(pk=post_pk)
-        serializer.save(author=self.request.user, post=post)
+        comment = serializer.save(author=self.request.user, post_id=post_pk)
 
+        post = comment.post
+        post_owner = post.author
+
+        if post_owner != self.request.user:
+            Notification.objects.create(
+                user=post_owner,
+                message=f"{self.request.user.username} commented on your post '{post.title}'.",
+                post=post,
+                comment=comment
+            )
 
 
 
@@ -45,7 +60,17 @@ class ReportViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        report = serializer.save(user=self.request.user)
+
+        # Notify all admin users
+        admins = User.objects.filter(is_staff=True)
+        for admin in admins:
+            Notification.objects.create(
+                user=admin,
+                message=f"{self.request.user.username} reported a {'comment' if report.comment else 'post'}.",
+                post=report.post,
+                # optionally comment=report.comment,
+            )
 
     def get_queryset(self):
         user = self.request.user
