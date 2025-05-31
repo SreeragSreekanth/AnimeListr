@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'anime',
     'reviews',
     'forum',
+    'watchlist',
 
 ]
 

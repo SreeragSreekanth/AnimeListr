@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  
     path('api/', include('anime.urls')),
     path('api/forum/', include('forum.urls')),
+    path('api/', include('watchlist.urls')),
 
 ]
 
