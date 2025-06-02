@@ -24,6 +24,10 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
     
+    def update(self, request, *args, **kwargs):
+        # Allow partial update so that user can update only bio or profile picture without sending all fields
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
 
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer

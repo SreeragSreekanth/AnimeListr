@@ -36,23 +36,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ['bio', 'profile_picture']
-
-
-
 class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
+    bio = serializers.CharField(source='profile.bio', allow_blank=True, required=False)
+    profile_picture = serializers.ImageField(source='profile.profile_picture', required=False)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email','profile']
+        fields = ['id', 'username', 'email', 'bio', 'profile_picture']
 
     extra_kwargs = {
-            'username': {'required': False},
-            'email': {'required': False},
-        }
+        'username': {'required': False},
+        'email': {'required': False},
+    }
 
     def validate_username(self, value):
         user = self.context['request'].user
@@ -65,9 +60,10 @@ class UserSerializer(serializers.ModelSerializer):
         if User.objects.exclude(pk=user.pk).filter(email=value).exists():
             raise serializers.ValidationError("Email already taken.")
         return value
-    
+
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', {})
+
         bio = profile_data.get('bio')
         profile_picture = profile_data.get('profile_picture')
 
@@ -83,7 +79,7 @@ class UserSerializer(serializers.ModelSerializer):
         profile.save()
 
         return instance
-    
+
     
     
 
