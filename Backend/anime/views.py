@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .utils import fetch_anilist_data
+import django_filters
 
 
 
@@ -19,13 +20,29 @@ class GenreViewSet(viewsets.ModelViewSet):
             return [permissions.IsAdminUser()]
         return [permissions.AllowAny()]
 
+class AnimeFilter(django_filters.FilterSet):
+    genre = django_filters.CharFilter(field_name="genres__slug", lookup_expr='iexact')
+    release_year = django_filters.NumberFilter()
+    min_year = django_filters.NumberFilter(field_name='release_year', lookup_expr='gte')
+    max_year = django_filters.NumberFilter(field_name='release_year', lookup_expr='lte')
+    status = django_filters.CharFilter(lookup_expr='iexact')
+
+    class Meta:
+        model = Anime
+        fields = ['genre', 'release_year','min_year', 'max_year', 'status']
+
 class AnimeViewSet(viewsets.ModelViewSet):
     queryset = Anime.objects.all().order_by('-created_at')
     serializer_class = AnimeSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['genres__name', 'release_year']
-    search_fields = ['title']
     lookup_field = 'slug'
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = AnimeFilter
+    search_fields = ['title']
+    ordering_fields = ['rating', 'popularity', 'release_year', 'title']
+    ordering = ['-created_at']  # default ordering
+
+    
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:

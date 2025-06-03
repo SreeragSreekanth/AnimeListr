@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import PrivateRoute from "./components/PrivateRoute";
 import Profile from "./pages/Profile";
 import AnimeList from './pages/AnimeList'; 
+import AnimeDetail from './components/AnimeDetail';
 
 function App() {
   return (
@@ -12,7 +13,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/" element={<AnimeList />} />
-      {/* <Route path="/anime/:slug" element={<AnimeDetail />} /> */}
+      <Route path="/anime/:slug" element={<AnimeDetail />} />
 
     </Routes>
   );
