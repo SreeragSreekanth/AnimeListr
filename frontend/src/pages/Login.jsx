@@ -15,6 +15,7 @@ export default function Login() {
       const tokenData = await api("token/", "POST", { username, password });
       const profile = await api("profile/", "GET", null, tokenData.access);
       login({ ...profile, token: tokenData.access });
+      console.log("Logged in as:", profile);
       navigate("/");
     } catch (err) {
       alert("Login failed: " + err.message);

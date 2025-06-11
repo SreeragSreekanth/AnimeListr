@@ -63,6 +63,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # React frontend default
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 
 TEMPLATES = [
     {

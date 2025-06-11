@@ -54,34 +54,45 @@ class AniListAutoImportView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def post(self, request):
-        title = request.data.get('title')
+        title = request.data.get("title")
         if not title:
-            return Response({'error': 'Title is required'}, status=400)
+            return Response({"detail": "Title is required"}, status=400)
 
         anime_data = fetch_anilist_data(title)
         if not anime_data:
-            return Response({'error': 'Anime not found'}, status=404)
+            return Response({"detail": "No anime found on AniList."}, status=404)
 
-        if Anime.objects.filter(public_api_id=anime_data['id']).exists():
-            return Response({'detail': 'Anime already imported.'}, status=400)
+        try:
+            # Use the correct ID key
+            public_api_id = str(anime_data.get("anilist_id"))
+            if not public_api_id:
+                print("AniList response missing 'anilist_id':", anime_data)
+                return Response({"detail": "Invalid AniList response (missing id)."}, status=500)
 
-        # Handle genres
-        genre_objs = []
-        for genre_name in anime_data['genres']:
-            genre_obj, _ = Genre.objects.get_or_create(name=genre_name)
-            genre_objs.append(genre_obj)
+            if Anime.objects.filter(public_api_id=public_api_id).exists():
+                return Response({"detail": "Anime already exists."}, status=200)
 
-        anime = Anime.objects.create(
-            title=anime_data['title']['romaji'],
-            slug=slugify(anime_data['title']['romaji']),
-            description=anime_data.get('description') or '',
-            cover_image=anime_data['coverImage']['large'],
-            release_year=anime_data['startDate']['year'],
-            episode_count=anime_data.get('episodes') or 0,
-            status=anime_data['status'].lower(),
-            is_public_api=True,
-            public_api_id=anime_data['id'],
-        )
-        anime.genres.set(genre_objs)
+            # Create anime object
+            anime = Anime.objects.create(
+                title=anime_data.get("title", "Unknown"),
+                description=anime_data.get("description", ""),
+                cover_image=anime_data.get("cover_image", ""),
+                release_year=anime_data.get("release_year"),
+                episode_count=anime_data.get("episode_count"),
+                status=anime_data.get("status", "ongoing").lower(),  # match choices
+                type=anime_data.get("type", "TV"),  # match TYPE_CHOICES
+                is_public_api=True,
+                public_api_id=public_api_id,
+            )
 
-        return Response({'detail': 'Anime imported successfully'}, status=201)
+            # Handle genres (create if not exists)
+            genre_names = anime_data.get("genres", [])
+            for name in genre_names:
+                genre_obj, _ = Genre.objects.get_or_create(name=name)
+                anime.genres.add(genre_obj)
+
+            return Response({"detail": f"Imported anime: {anime.title}"}, status=201)
+
+        except Exception as e:
+            print("Error during anime import:", str(e))
+            return Response({"detail": "Import failed. Check server logs."}, status=500)

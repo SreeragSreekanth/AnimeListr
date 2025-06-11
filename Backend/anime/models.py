@@ -36,6 +36,18 @@ class Anime(models.Model):
         ('upcoming', 'Upcoming'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ongoing')
+
+    TYPE_CHOICES = [
+    ('TV', 'TV'),
+    ('Movie', 'Movie'),
+    ('OVA', 'OVA'),
+    ('ONA', 'ONA'),
+    ('Special', 'Special'),
+    ('Music', 'Music'),
+    ('Other', 'Other'),
+    ]
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='TV')
+
     
     is_public_api = models.BooleanField(default=False)
     public_api_id = models.CharField(max_length=100, blank=True, null=True)

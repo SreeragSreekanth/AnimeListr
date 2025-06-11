@@ -27,24 +27,30 @@ const AnimeDetail = () => {
   if (!anime) return <p className="p-6 text-center text-gray-500">Anime not found.</p>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row gap-6">
         <img
           src={anime.cover_image}
           alt={anime.title}
-          className="w-full md:w-64 rounded-xl shadow-md object-cover"
+          className="w-full md:w-64 h-auto rounded-2xl shadow-xl object-cover"
         />
-        <div>
-          <h1 className="text-3xl font-bold mb-2">{anime.title}</h1>
-          <p className="text-gray-600 mb-2">{anime.release_year} • {anime.status}</p>
-          <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex-1">
+          <h1 className="text-4xl font-extrabold mb-3 text-blue-700">{anime.title}</h1>
+          <div className="text-gray-600 mb-2 space-y-1">
+            <p>📅 Year: {anime.release_year || 'Unknown'}</p>
+            <p>📺 Type: {anime.type || 'N/A'}</p>
+            <p>🎬 Episodes: {anime.episode_count || 'Unknown'}</p>
+            <p>📈 Status: {anime.status?.charAt(0).toUpperCase() + anime.status?.slice(1)}</p>
+            <p>⭐ Rating: {anime.average_rating ?? 'N/A'}</p>
+          </div>
+          <div className="flex flex-wrap gap-2 my-4">
             {anime.genres.map((genre) => (
-              <span key={genre.id} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+              <span key={genre.id} className="bg-indigo-100 text-indigo-800 text-sm px-3 py-1 rounded-full">
                 {genre.name}
               </span>
             ))}
           </div>
-          <p className="text-gray-800 leading-relaxed">{anime.description}</p>
+          <div className="prose prose-sm max-w-none text-gray-800" dangerouslySetInnerHTML={{ __html: anime.description }} />
         </div>
       </div>
     </div>
