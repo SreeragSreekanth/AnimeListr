@@ -29,6 +29,7 @@ class AnimeSerializer(serializers.ModelSerializer):
             'genres',
             'genre_ids',
             'status',
+            'type',
             'average_rating',
             'is_public_api',
             'public_api_id',

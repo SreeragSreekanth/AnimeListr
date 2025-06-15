@@ -1,40 +1,45 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
-import AnimeList from './pages/AnimeList'; 
+import AnimeList from './pages/AnimeList';
 import AnimeDetail from './components/AnimeDetail';
+
 import AdminImportAnime from './components/AdminImportAnime';
+import AdminAnimeDashboard from './admin/AdminAnimeDashboard';
+
 import PrivateRoute from './components/PrivateRoute';
-import { useAuth } from './context/AuthContext';
+import AdminRoute from './components/AdminRoute';
 
 function App() {
-  const { user } = useAuth();
-
-  const AdminRoute = ({ children }) => {
-    if (!user || !user.is_staff) return <Navigate to="/" />;
-    return children;
-  };
-
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<AnimeList />} />
       <Route path="/anime/:slug" element={<AnimeDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      
+
+      {/* Authenticated User Route */}
       <Route path="/profile" element={
         <PrivateRoute>
           <Profile />
         </PrivateRoute>
       } />
-      
+
+      {/* Admin-only Routes */}
       <Route path="/admin/import-anime" element={
-        <PrivateRoute>
-          <AdminRoute>
-            <AdminImportAnime />
-          </AdminRoute>
-        </PrivateRoute>
+        <AdminRoute>
+          <AdminImportAnime />
+        </AdminRoute>
+      } />
+
+      <Route path="/admin/anime" element={
+        <AdminRoute>
+          <AdminAnimeDashboard />
+        </AdminRoute>
       } />
     </Routes>
   );
