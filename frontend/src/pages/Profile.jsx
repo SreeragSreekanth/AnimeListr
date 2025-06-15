@@ -17,47 +17,46 @@ export default function Profile() {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!user || !user.access) {
+        navigate("/login");
+        return;
+      }
       try {
-        const data = await api("profile/", "GET", null, user?.token);
+        const data = await api("profile/", "GET", null, user.access);
         setProfileData(data);
         setBio(data.bio || "");
         setPreview(data.profile_picture || null);
-        setLoading(false);
       } catch (err) {
         console.error(err);
         setMessage("Failed to load profile");
+      } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [user]);
+  }, [user, navigate]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
-formData.append("username", profileData.username);
-formData.append("email", profileData.email);
-formData.append("bio", bio);
-
-
-    if (profilePicture) {
-      formData.append("profile_picture", profilePicture);
-    }
+    formData.append("username", profileData.username);
+    formData.append("email", profileData.email);
+    formData.append("bio", bio);
+    if (profilePicture) formData.append("profile_picture", profilePicture);
 
     try {
-      const updated = await api("profile/", "PUT", formData, user?.token, true);
-    //   console.log("Updated profile response:", updated);
+      const updated = await api("profile/", "PUT", formData, user.access, true);
       setProfileData(updated);
       setPreview(updated.profile_picture || null);
       setBio(updated.bio || "");
-      setMessage("Profile updated successfully");
       login({ ...user, ...updated });
-      setIsEditing(false); // go back to dashboard after update
+      setMessage("✅ Profile updated successfully!");
+      setIsEditing(false);
     } catch (err) {
       console.error(err);
-      setMessage("Update failed");
+      setMessage("❌ Update failed. Please try again.");
     }
   };
 
@@ -67,6 +66,13 @@ formData.append("bio", bio);
   };
 
   if (loading) return <div className="text-center mt-10">Loading...</div>;
+
+  const imageUrl =
+    preview && preview.startsWith("http")
+      ? preview
+      : preview
+      ? `${import.meta.env.VITE_API_BASE_URL}${preview}`
+      : "https://placehold.co/150x150/png";
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-gray-900 text-white rounded-xl shadow-md">
@@ -127,21 +133,17 @@ formData.append("bio", bio);
       ) : (
         <div>
           <div className="flex items-center gap-6 mb-6">
-          <img src={preview ? preview.startsWith("http")
-            ? preview : `${import.meta.env.VITE_API_BASE_URL}${preview}`: "https://placehold.co/150x150/png"}
-  alt="Profile"
-  className="w-28 h-28 rounded-full object-cover border-2 border-green-500"
-/>
-
-
+            <img
+              src={imageUrl}
+              alt="Profile"
+              className="w-28 h-28 rounded-full object-cover border-2 border-green-500"
+            />
             <div>
               <h2 className="text-3xl font-bold text-green-400">{profileData?.username}</h2>
               <p className="text-gray-400">{profileData?.email}</p>
               <p className="mt-2">{profileData.bio || "No bio added yet."}</p>
             </div>
           </div>
-
-          {/* Here you can add other dashboard info, like stats or recent activity */}
 
           <button
             onClick={() => setIsEditing(true)}

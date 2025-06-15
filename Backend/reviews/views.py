@@ -21,16 +21,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'rating']
 
     def get_queryset(self):
-        anime_slug= self.kwargs.get('anime_slug')  # match 'lookup' param from nested router
-        if not anime_slug:
-            return Review.objects.none()  # or all reviews if you want
-        try:
-            anime = Anime.objects.get(id=anime_slug)
-        except Anime.DoesNotExist:
-            raise NotFound("Anime not found")
-        return Review.objects.filter(anime=anime).order_by('-created_at')
+        anime_slug = self.kwargs.get('anime_slug')
+        if anime_slug:
+            try:
+                anime = Anime.objects.get(slug=anime_slug)
+                return Review.objects.filter(anime=anime).order_by('-created_at')
+            except Anime.DoesNotExist:
+                raise NotFound("Anime not found")
+        return Review.objects.all().order_by('-created_at')  # ✅ fallback for top-level route
+
 
     def perform_create(self, serializer):
         anime_slug = self.kwargs.get('anime_slug')
-        anime = Anime.objects.get(id=anime_slug)
+        anime = Anime.objects.get(slug=anime_slug)
         serializer.save(user=self.request.user, anime=anime)

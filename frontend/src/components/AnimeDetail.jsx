@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import ReviewList from './Reviews/ReviewList';
+import ReviewForm from './Reviews/ReviewForm';
+import { useAuth } from '../context/AuthContext';
 
 const AnimeDetail = () => {
   const { slug } = useParams();
+  const { user } = useAuth();
   const [anime, setAnime] = useState(null);
+  const [userHasReviewed, setUserHasReviewed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const fetchAnimeDetail = async () => {
@@ -19,9 +24,26 @@ const AnimeDetail = () => {
     }
   };
 
+  const checkUserReview = async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}anime/${slug}/reviews/`);
+      const hasReview = res.data.results?.some((r) => r.user === user.username);
+      setUserHasReviewed(hasReview);
+    } catch (err) {
+      console.error('Error checking user review:', err);
+    }
+  };
+
   useEffect(() => {
     fetchAnimeDetail();
   }, [slug]);
+
+  useEffect(() => {
+    if (slug && user) {
+      checkUserReview();
+    }
+  }, [slug, user]);
 
   if (loading) return <p className="p-6 text-center text-gray-500">Loading...</p>;
   if (!anime) return <p className="p-6 text-center text-gray-500">Anime not found.</p>;
@@ -53,6 +75,16 @@ const AnimeDetail = () => {
           <div className="prose prose-sm max-w-none text-gray-800" dangerouslySetInnerHTML={{ __html: anime.description }} />
         </div>
       </div>
+
+      {/* ✅ Only show form if user is logged in and hasn't reviewed */}
+      {!userHasReviewed && user && (
+        <ReviewForm animeSlug={anime.slug} onReviewPosted={() => {
+          fetchAnimeDetail();
+          checkUserReview(); // recheck after posting
+        }} />
+      )}
+
+      <ReviewList animeSlug={anime.slug} />
     </div>
   );
 };
