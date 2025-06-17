@@ -3,7 +3,9 @@ from .models import Post, Comment, Report
 from .serializers import PostSerializer, CommentSerializer, ReportSerializer
 from notifications.models import Notification
 from django.contrib.auth import get_user_model
-
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter 
+from django.db.models import Count
 
 User = get_user_model()
 
@@ -22,6 +24,13 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['title', 'author__username']
+    ordering_fields = ['created_at', 'comments_count', 'title']
+    ordering = ['-created_at']  # default ordering
+
+    def get_queryset(self):
+        return Post.objects.annotate(comments_count=Count('comments')).order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -49,7 +58,6 @@ class CommentViewSet(viewsets.ModelViewSet):
                 user=post_owner,
                 message=f"{self.request.user.username} commented on your post '{post.title}'.",
                 post=post,
-                comment=comment
             )
 
 
