@@ -1,124 +1,221 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AdminForumDashboard = () => {
-  const { user } = useAuth();
-  const [tab, setTab] = useState('posts');
-
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
   const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("Posts");
 
-  const fetchPosts = async () => {
+
+  const { getToken } = useAuth();
+  const navigate = useNavigate();
+
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}forum/posts/`);
-      setPosts(res.data.results);
-    } catch (err) {
-      console.error('Failed to fetch posts', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const token = getToken();
+      if (!token) {
+        console.error("No access token found.");
+        return;
+      }
 
-  const fetchComments = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}forum/comments/`);
-      setComments(res.data.results);
-    } catch (err) {
-      console.error('Failed to fetch comments', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
-  const fetchReports = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}forum/reports/`);
-      setReports(res.data.results);
+      const [postRes, reportRes, commentRes] = await Promise.all([
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}forum/posts/`, config),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}forum/reports/`, config),
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}forum/comments/`, config),
+      ]);
+
+      setPosts(postRes.data.results);
+      setReports(reportRes.data.results);
+      setComments(commentRes.data.results);
     } catch (err) {
-      console.error('Failed to fetch reports', err);
+      console.error("Error fetching admin forum data", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (tab === 'posts') fetchPosts();
-    if (tab === 'comments') fetchComments();
-    if (tab === 'reports') fetchReports();
-  }, [tab]);
+    fetchData();
+  }, []);
 
-  const handleDelete = async (id, type) => {
-    if (!user?.access || !window.confirm('Are you sure you want to delete this item?')) return;
+  const getPostTitleById = (id) => {
+    const post = posts.find((p) => p.id === id);
+    return post ? post.title : `Post #${id}`;
+  };
+
+  const handleDelete = async (type, id) => {
+    if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
+
+    const token = getToken();
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
     try {
-      const url = `${import.meta.env.VITE_API_BASE_URL}forum/${type}/${id}/`;
-      await axios.delete(url, {
-        headers: {
-          Authorization: `Bearer ${user.access}`,
-        },
-      });
-      if (tab === 'posts') fetchPosts();
-      if (tab === 'comments') fetchComments();
-      if (tab === 'reports') fetchReports();
+      let endpoint = '';
+      if (type === 'post') endpoint = `forum/posts/${id}/`;
+      else if (type === 'comment') endpoint = `forum/comments/${id}/`;
+      else if (type === 'report') endpoint = `forum/reports/${id}/`;
+
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, config);
+      fetchData(); // Refresh
     } catch (err) {
-      console.error('Delete failed', err);
+      console.error(`Failed to delete ${type}:`, err);
     }
   };
 
-  const renderTable = (items, type) => (
-    <table className="min-w-full bg-white border">
-      <thead className="bg-gray-200">
-        <tr>
-          <th className="p-2 border">ID</th>
-          <th className="p-2 border">Content</th>
-          <th className="p-2 border">Author</th>
-          <th className="p-2 border">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => (
-          <tr key={item.id} className="border-t">
-            <td className="p-2 border">{item.id}</td>
-            <td className="p-2 border">{item.title || item.body}</td>
-            <td className="p-2 border">{item.author_username || '-'}</td>
-            <td className="p-2 border">
-              <button
-                onClick={() => handleDelete(item.id, type)}
-                className="px-2 py-1 bg-red-500 text-white rounded"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+  const handleView = (type, id) => {
+    if (type === 'post') navigate(`/forum/posts/${id}`);
+    else if (type === 'report') alert(`No report view page yet`);
+  };
+
+  const renderActions = (type, id, showView = true) => (
+    <td className="border p-2">
+      {showView && (
+        <button className="text-blue-600 mr-2" onClick={() => handleView(type, id)}>View</button>
+      )}
+      <button className="text-red-600" onClick={() => handleDelete(type, id)}>Delete</button>
+    </td>
   );
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin Forum Dashboard</h1>
-
-      <div className="flex gap-4 mb-6">
-        <button onClick={() => setTab('posts')} className={`px-4 py-2 rounded ${tab === 'posts' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Posts</button>
-        <button onClick={() => setTab('comments')} className={`px-4 py-2 rounded ${tab === 'comments' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Comments</button>
-        <button onClick={() => setTab('reports')} className={`px-4 py-2 rounded ${tab === 'reports' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Reports</button>
-      </div>
-
-      {loading ? <p>Loading...</p> : (
+      <h1 className="text-2xl font-bold mb-6">Admin Forum Dashboard</h1>
+  
+      {loading ? (
+        <p>Loading data...</p>
+      ) : (
         <>
-          {tab === 'posts' && renderTable(posts, 'posts')}
-          {tab === 'comments' && renderTable(comments, 'comments')}
-          {tab === 'reports' && renderTable(reports, 'reports')}
+          {/* Tab Navigation */}
+          <div className="flex space-x-4 mb-6">
+            {["Posts", "Comments", "Reports"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded ${
+                  activeTab === tab
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-800"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+  
+          {/* Tab Content */}
+          {activeTab === "Posts" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-3">Posts</h2>
+              <table className="min-w-full border bg-white">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border p-2">ID</th>
+                    <th className="border p-2">Title</th>
+                    <th className="border p-2">Author</th>
+                    <th className="border p-2">Created</th>
+                    <th className="border p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {posts.map((post) => (
+                    <tr key={post.id}>
+                      <td className="border p-2">{post.id}</td>
+                      <td className="border p-2">{post.title}</td>
+                      <td className="border p-2">{post.author_username || '-'}</td>
+                      <td className="border p-2">{new Date(post.created_at).toLocaleString()}</td>
+                      {renderActions('post', post.id)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+  
+          {activeTab === "Comments" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-3">Comments</h2>
+              <table className="min-w-full border bg-white">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border p-2">ID</th>
+                    <th className="border p-2">Post Title</th>
+                    <th className="border p-2">Author</th>
+                    <th className="border p-2">Content</th>
+                    <th className="border p-2">Created</th>
+                    <th className="border p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comments.map((comment) => (
+                    <tr key={comment.id}>
+                      <td className="border p-2">{comment.id}</td>
+                      <td className="border p-2">{getPostTitleById(comment.post)}</td>
+                      <td className="border p-2">{comment.author_username || '-'}</td>
+                      <td className="border p-2">{comment.content}</td>
+                      <td className="border p-2">{new Date(comment.created_at).toLocaleString()}</td>
+                      {renderActions('comment', comment.id, false)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+  
+          {activeTab === "Reports" && (
+            <section>
+              <h2 className="text-xl font-semibold mb-3">Reports</h2>
+              <table className="min-w-full border bg-white">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border p-2">ID</th>
+                    <th className="border p-2">User</th>
+                    <th className="border p-2">Post</th>
+                    <th className="border p-2">Comment</th>
+                    <th className="border p-2">Reason</th>
+                    <th className="border p-2">Description</th>
+                    <th className="border p-2">Created</th>
+                    <th className="border p-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.map((report) => (
+                    <tr key={report.id}>
+                      <td className="border p-2">{report.id}</td>
+                      <td className="border p-2">{report.user}</td>
+                      <td className="border p-2">
+                        {report.post ? getPostTitleById(report.post) : '-'}
+                      </td>
+                      <td className="border p-2">
+                        {report.comment ? report.comment : '-'}
+                      </td>
+                      <td className="border p-2">{report.reason}</td>
+                      <td className="border p-2">{report.description}</td>
+                      <td className="border p-2">{new Date(report.created_at).toLocaleString()}</td>
+                      {renderActions('report', report.id)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
         </>
       )}
     </div>
-  );
+  );  
 };
 
 export default AdminForumDashboard;

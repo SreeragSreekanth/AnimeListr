@@ -41,11 +41,13 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
 
     def get_queryset(self):
-        post_pk = self.kwargs.get('post_pk')  # get post ID from nested URL
-        if post_pk:
-            return Comment.objects.filter(post_id=post_pk).order_by('created_at')
-        return Comment.objects.none()
-
+        if 'post_pk' in self.kwargs:
+            # Nested: /posts/:post_pk/comments/
+            return Comment.objects.filter(post_id=self.kwargs['post_pk']).select_related('author', 'post')
+        # Flat: /comments/
+        return Comment.objects.all().select_related('author', 'post')
+    
+    
     def perform_create(self, serializer):
         post_pk = self.kwargs.get('post_pk')
         comment = serializer.save(author=self.request.user, post_id=post_pk)
@@ -85,3 +87,5 @@ class ReportViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return Report.objects.all()
         return Report.objects.filter(user=user)
+
+
