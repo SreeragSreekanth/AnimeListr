@@ -14,6 +14,8 @@ import AdminAnimeDashboard from './admin/AdminAnimeDashboard';
 import AdminForumDashboard from './admin/AdminForumDashboard'; 
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
+import WatchlistPage from "./components/Watchlist/WatchlistPage";
+
 
 function App() {
   return (
@@ -50,6 +52,8 @@ function App() {
     <AdminForumDashboard />
   </AdminRoute>
 } />
+      <Route path="/watchlist" element={<PrivateRoute><WatchlistPage /></PrivateRoute>} />
+
     </Routes>
   );
 }

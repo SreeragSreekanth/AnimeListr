@@ -6,7 +6,7 @@ from anime.models import Anime
 class AnimeMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Anime
-        fields = ['id', 'title', 'cover_image'] 
+        fields = ['id', 'title', 'cover_image','slug'] 
 
 class WatchlistSerializer(serializers.ModelSerializer):
     anime = AnimeMiniSerializer(read_only=True)

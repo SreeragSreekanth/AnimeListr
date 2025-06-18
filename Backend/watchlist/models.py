@@ -1,7 +1,8 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
-from anime.models import Anime  # assuming anime app has Anime model
+from anime.models import Anime  
+
 
 class Watchlist(models.Model):
     STATUS_CHOICES = [
