@@ -284,26 +284,33 @@ const PostDetail = () => {
         </div>
       )}
 
-      {user ? (
-        <form onSubmit={handleCommentSubmit} className="space-y-2">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            rows="3"
-            className="w-full border rounded p-2"
-            placeholder="Write a comment..."
-          />
-          {error && <p className="text-red-500">{error}</p>}
-          <button
-            type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-          >
-            Add Comment
-          </button>
-        </form>
-      ) : (
-        <p className="text-gray-500 mt-4 italic">Login to comment on this post.</p>
-      )}
+{user ? (
+  user.username !== post.author_username ? (
+    <form onSubmit={handleCommentSubmit} className="space-y-2">
+      <textarea
+        value={newComment}
+        onChange={(e) => setNewComment(e.target.value)}
+        rows="3"
+        className="w-full border rounded p-2"
+        placeholder="Write a comment..."
+      />
+      {error && <p className="text-red-500">{error}</p>}
+      <button
+        type="submit"
+        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+      >
+        Add Comment
+      </button>
+    </form>
+  ) : (
+    <p className="text-gray-500 italic mt-4">
+      You cannot comment on your own post.
+    </p>
+  )
+) : (
+  <p className="text-gray-500 mt-4 italic">Login to comment on this post.</p>
+)}
+
     </div>
   );
 };

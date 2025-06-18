@@ -12,7 +12,7 @@ const AdminAnimeImport = () => {
     setMessage('');
 
     try {
-      const token = JSON.parse(localStorage.getItem("user"))?.token;
+      const token = JSON.parse(localStorage.getItem("user"))?.access;
 
       const res = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}auto-import-anilist/`,

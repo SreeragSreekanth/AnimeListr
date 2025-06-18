@@ -4,7 +4,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 const ForumPage = () => {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const baseUrl = `${import.meta.env.VITE_API_BASE_URL}forum/posts/`;
 
   const [posts, setPosts] = useState([]);
@@ -13,6 +13,9 @@ const ForumPage = () => {
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [newPost, setNewPost] = useState({ title: "", content: "" });
+  const [posting, setPosting] = useState(false);
 
   const fetchPosts = async (url = baseUrl) => {
     try {
@@ -43,19 +46,60 @@ const ForumPage = () => {
     }
   };
 
+  const handleNewPost = async () => {
+    try {
+      setPosting(true);
+      await axios.post(
+        baseUrl,
+        newPost,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setNewPost({ title: "", content: "" });
+      fetchPosts();
+    } catch (err) {
+      console.error("Failed to create post", err);
+    } finally {
+      setPosting(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-indigo-700">Forum</h1>
-        {user && (
-          <Link
-            to="/forum/create"
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-          >
-            + New Post
-          </Link>
-        )}
       </div>
+
+      {user && (
+        <div className="mb-6 border p-4 rounded bg-gray-50">
+          <h2 className="text-lg font-semibold mb-2 text-indigo-600">Create New Post</h2>
+          <input
+            type="text"
+            placeholder="Title"
+            value={newPost.title}
+            onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+            className="w-full border rounded p-2 mb-2"
+          />
+          <textarea
+            placeholder="Content"
+            value={newPost.content}
+            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+            className="w-full border rounded p-2 mb-2"
+            rows={4}
+          />
+          <button
+            onClick={handleNewPost}
+            disabled={posting || !newPost.title.trim() || !newPost.content.trim()}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {posting ? "Posting..." : "Post"}
+          </button>
+        </div>
+      )}
 
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <input
