@@ -61,7 +61,8 @@ ROOT_URLCONF = 'backend.urls'
 
 CORS_ALLOWED_ORIGINS = [
     "https://anime-listr.vercel.app",
-    "http://localhost:3000",  # for local testing if needed
+    
+    "http://localhost:5173",  # for local testing if needed
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -158,7 +159,6 @@ SIMPLE_JWT = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 # Email
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
