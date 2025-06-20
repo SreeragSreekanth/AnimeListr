@@ -17,9 +17,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG") == "True"
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host.strip()]
 
 
 # Application definition
@@ -60,10 +60,12 @@ ROOT_URLCONF = 'backend.urls'
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React frontend default
+    "https://anime-listr-git-main-sreerag-sreekanths-projects.vercel.app/",
+    "http://localhost:3000",  # for local testing if needed
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
 
 
 TEMPLATES = [
@@ -93,7 +95,6 @@ DATABASES = {
         'NAME': BASE_DIR / os.getenv("DATABASE_NAME", "db.sqlite3"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -130,6 +131,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # For production
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
