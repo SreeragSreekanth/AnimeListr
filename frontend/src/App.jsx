@@ -27,7 +27,11 @@ function App() {
   return (
     <>
       {/* Navbar based on user role */}
-      {user?.is_staff ? <AdminNavbar /> : <UserNavbar />}
+      {user?.is_staff ? (
+        <AdminNavbar />
+      ) : user ? (
+        <UserNavbar />
+      ) : null}
 
       <Routes>
         {/* Public Routes */}

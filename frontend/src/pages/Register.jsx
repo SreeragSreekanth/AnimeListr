@@ -12,6 +12,7 @@ export default function Register() {
 
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(""); 
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -20,20 +21,33 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+  
     if (formData.password !== formData.confirm_password) {
       setError("Passwords do not match");
       return;
     }
-
+  
     try {
-      await api("register/", "POST", formData);
-      navigate("/login");
+      const res = await api("register/", "POST", {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        confirm_password: formData.confirm_password,
+      });
+    
+      console.log("Registration response:", res); // logs { username, email }
+    
+      setSuccess("Registration successful!");
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
+      console.error("Registration error:", err.data || err.message);
       setError(err.message);
     }
+    
+    
   };
-
+  
+  
   return (
     <div
       className="min-h-screen w-full bg-cover bg-center bg-no-repeat flex items-center justify-center"
