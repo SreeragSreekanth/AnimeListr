@@ -40,3 +40,4 @@ urllib3==2.4.0
 virtualenv==20.26.3
 Werkzeug==3.0.4
 XlsxWriter==3.2.1
+gunicorn==23.0.0
