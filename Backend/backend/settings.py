@@ -60,7 +60,7 @@ ROOT_URLCONF = 'backend.urls'
 
 
 CORS_ALLOWED_ORIGINS = [
-    "https://anime-listr-git-main-sreerag-sreekanths-projects.vercel.app/",
+    "https://anime-listr.vercel.app",
     "http://localhost:3000",  # for local testing if needed
 ]
 
