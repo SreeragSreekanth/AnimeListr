@@ -23,6 +23,8 @@ Jinja2==3.1.4
 joblib==1.4.2
 lxml==5.3.0
 MarkupSafe==3.0.2
+numpy==2.0.0
+pandas==2.2.2
 pillow==10.4.0
 platformdirs==4.2.2
 PyJWT==2.9.0
@@ -39,5 +41,5 @@ tzdata==2024.1
 urllib3==2.4.0
 virtualenv==20.26.3
 Werkzeug==3.0.4
+whitenoise==6.9.0
 XlsxWriter==3.2.1
-gunicorn==23.0.0
