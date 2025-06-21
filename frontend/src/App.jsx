@@ -20,18 +20,21 @@ import WatchlistPage from "./components/Watchlist/WatchlistPage";
 
 import AdminNavbar from './components/Navbar/AdminNavbar';
 import UserNavbar from './components/Navbar/UserNavbar';
+import CommonNavbar from './components/Navbar/CommonNavbar';
 
 function App() {
   const { user } = useAuth();
 
   return (
     <>
-      {/* Navbar based on user role */}
+      {/* Navbar Selection */}
       {user?.is_staff ? (
         <AdminNavbar />
       ) : user ? (
         <UserNavbar />
-      ) : null}
+      ) : (
+        <CommonNavbar />
+      )}
 
       <Routes>
         {/* Public Routes */}
@@ -53,20 +56,18 @@ function App() {
             <AdminImportAnime />
           </AdminRoute>
         } />
-
         <Route path="/admin/anime" element={
           <AdminRoute>
             <AdminAnimeDashboard />
           </AdminRoute>
         } />
-
         <Route path="/admin/forum" element={
           <AdminRoute>
             <AdminForumDashboard />
           </AdminRoute>
         } />
 
-        {/* Forum and Other Auth Routes */}
+        {/* Forum, Watchlist, Notifications */}
         <Route path="/forum" element={<ForumPage />} />
         <Route path="/forum/posts/:id" element={<PostDetail />} />
         <Route path="/watchlist" element={
