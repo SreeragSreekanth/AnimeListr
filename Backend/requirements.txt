@@ -7,6 +7,7 @@ colorama==0.4.6
 crispy-bootstrap4==2024.1
 crispy-bootstrap5==2024.2
 distlib==0.3.8
+dj-database-url==3.0.0
 Django==5.0.6
 django-bootstrap5==24.2
 django-cors-headers==4.7.0
@@ -41,4 +42,3 @@ virtualenv==20.26.3
 Werkzeug==3.0.4
 whitenoise==6.9.0
 XlsxWriter==3.2.1
-gunicorn==23.0.0
